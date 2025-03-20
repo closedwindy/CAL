@@ -349,3 +349,9 @@ void OLED_ShowFloatNum(uint8_t Line, uint8_t Column, double Number, uint8_t Deci
         OLED_ShowChar(Line, Column++, (digit % 10) + '0');
     }
 }
+void OLED_Menu()
+{
+	
+
+
+}

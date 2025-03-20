@@ -18,7 +18,7 @@ static int expr_pos = 0;
 double result(const char* expr);
 double cal(const char* p);
 
-char allowed_chars[] = {'0','1','2','3','4','5','6','7','8','9','+','-','*','/','(',')','='};
+char allowed_chars[] = {'0','1','2','3','4','5','6','7','8','9','+','-','*','/','(',')','=','.'};
 
 void Get_Expression(char a) {
     if (expr_pos < 99) {
@@ -87,12 +87,13 @@ double cal(const char* p) {
 
 int main(void) {
     OLED_Init();
+    OLED_Menu();
     Encoder_Init();
     Key_Init();
     while (1) {
         KeyNum = Key_GetNum();
         Num += Encoder_Get();
-        if (Num > 16 || Num < 0) 
+        if (Num > 17 || Num < 0) 
         Num = 0;
         OLED_ShowChar(1, Count % 21, allowed_chars[Num]);  
         if (KeyNum == 3)
@@ -104,7 +105,7 @@ int main(void) {
         
         
        
-        while(allowed_chars[Num]=='=')
+        while(allowed_chars[Num]=='='&&KeyNum==3)
         {
             
             OLED_ShowFloatNum(1, (Count % 21) + 1, result(expr),2);
