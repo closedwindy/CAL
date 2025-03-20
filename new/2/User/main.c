@@ -18,7 +18,7 @@ static int expr_pos = 0;
 double result(const char* expr);
 double cal(const char* p);
 
-char allowed_chars[] = {'0','1','2','3','4','5','6','7','8','9','+','-','*','/','(',')','=','.'};
+char allowed_chars[] = {'0','1','2','3','4','5','6','7','8','9','+','-','*','/','(',')','=','.',};
 
 void Get_Expression(char a) {
     if (expr_pos < 99) {
