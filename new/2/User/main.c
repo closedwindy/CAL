@@ -3,58 +3,49 @@
 #include "OLED.h"
 #include "Encoder.h"
 #include "Key.h"
-#include "CAL_math.h"
+#include "math.h"
 #include "ctype.h"
 #include "stdlib.h"
 #include "stdio.h"
+#include "string.h"
 
+int16_t Num;                
+uint8_t KeyNum;             
+uint8_t Count = 1;       
+char expr[100] = {0};    
+int expr_pos = 0;           
+uint8_t line = 1; 
 
-int16_t Num;
-uint8_t KeyNum;
-uint8_t Count = 1;
-char expr[100] = {0};
-static int expr_pos = 0; 
+const char allowed_chars[] = {
+    '0','1','2','3','4','5','6','7','8','9',
+    '+','-','*','/','(',')','=','.'
+};
 
-double result(const char* expr);
-double cal(const char* p);
-
-char allowed_chars[] = {'0','1','2','3','4','5','6','7','8','9','+','-','*','/','(',')','=','.',};
-
-void Get_Expression(char a) {
-    if (expr_pos < 99) {
-        expr[expr_pos++] = a;
-        expr[expr_pos] = '\0';
-    }
-}
+double cal(const char** p_ptr);
+void Get_Expression(char ch);
 
 double result(const char* expr) {
-    if (expr == NULL || *expr == '\0') return 0.0;  
     const char* p = expr;
-    return cal(p);
+    return cal(&p);
 }
 
-double cal(const char* p) {
-    double nums[100];
+
+double cal(const char** p_ptr) {
+    const char* p = *p_ptr;
+    double nums[50] = {0};
     int nums_size = 0;
-    char ops[100];
+    char ops[50] = {0};
     int ops_size = 0;
 
     while (*p && *p != ')') {
         if (isdigit(*p) || *p == '.') {
-            if (nums_size >= 100) break;
             char* end;
-            double temp = strtod(p, &end);
-            if (end == p) { p++; continue; }
-            nums[nums_size++] = temp;
+            nums[nums_size++] = strtod(p, &end);
             p = end;
         } else if (*p == '(') {
-            p++;
-            if (nums_size >= 100) break;
-            double temp = cal(p);
-            nums[nums_size++] = temp;
-            p++;  // 跳过 ')'
+            p++; // 跳过 '('
+            nums[nums_size++] = cal(&p); // 递归处理括号
         } else if (*p == '+' || *p == '-' || *p == '*' || *p == '/') {
-            if (ops_size >= 100) break;
             ops[ops_size++] = *p;
             p++;
         } else {
@@ -62,53 +53,83 @@ double cal(const char* p) {
         }
     }
 
-    // 处理乘除
+ 
     int i = 0;
     while (i < ops_size) {
         if (ops[i] == '*' || ops[i] == '/') {
             double a = nums[i], b = nums[i+1];
             nums[i] = (ops[i] == '*') ? a * b : a / b;
-            for (int j = i+1; j < nums_size-1; j++) nums[j] = nums[j+1];
+            
+         
+            for (int j = i+1; j < nums_size-1; j++)
+                nums[j] = nums[j+1];
             nums_size--;
-            for (int j = i; j < ops_size-1; j++) ops[j] = ops[j+1];
+            
+       
+            for (int j = i; j < ops_size-1; j++)
+                ops[j] = ops[j+1];
             ops_size--;
         } else {
             i++;
         }
     }
 
-    // 处理加减
+
     double res = nums[0];
     for (i = 0; i < ops_size; i++) {
         res = (ops[i] == '+') ? res + nums[i+1] : res - nums[i+1];
     }
+
+ 
+    if (*p == ')') p++;
+    *p_ptr = p;
+
     return res;
 }
 
+
+void Get_Expression(char ch) {
+    if (expr_pos < 99) {
+        expr[expr_pos++] = ch;
+        expr[expr_pos] = '\0';
+    }
+}
+
 int main(void) {
-    OLED_Init();
-    OLED_Menu();
-    Encoder_Init();
-    Key_Init();
+    OLED_Init();     
+    Encoder_Init();   
+    Key_Init();         
+    OLED_Menu();      
+
     while (1) {
-        KeyNum = Key_GetNum();
-        Num += Encoder_Get();
-        if (Num > 17 || Num < 0) 
-        Num = 0;
-        OLED_ShowChar(1, Count % 21, allowed_chars[Num]);  
-        if (KeyNum == 3)
-        {
-       
-        Get_Expression(allowed_chars[Num]);
-         Count++;
-        }
+        KeyNum = Key_GetNum();      
+        Num += Encoder_Get();          
         
-        
+      
+        if (Num < 0) Num = sizeof(allowed_chars)-1;
+        if (Num >= sizeof(allowed_chars)) Num = 0;
+
        
-        while(allowed_chars[Num]=='='&&KeyNum==3)
-        {
+        OLED_ShowChar(line, Count % 21, allowed_chars[Num]);
+
+        if (KeyNum == 3) { 
+            if (allowed_chars[Num] == '=') {
+                double res = result(expr);
+                OLED_ShowFloatNum(line, (Count % 21) + 1, res, 2);
+                            
+                
+            } else {
             
-            OLED_ShowFloatNum(1, (Count % 21) + 1, result(expr),2);
+                Get_Expression(allowed_chars[Num]);
+                Count++;
+                if(Count==16)
+                {
+                    Count =0;
+                  
+                    line++;
+                 
+                }
+            }
         }
     }
 }
