@@ -15,7 +15,7 @@
     char expr[100] = {0};    
     int expr_pos = 0;           
     uint8_t line = 1; 
-
+    uint8_t _Float_flag=0;
     const char allowed_chars[] = {
         '0','1','2','3','4','5','6','7','8','9',
         '+','-','*','/','(',')','=','.'
@@ -34,9 +34,9 @@
 
     double cal(const char** p_ptr) {
         const char* p = *p_ptr;
-        double nums[50] = {0};
+        double nums[55] = {0};
         int nums_size = 0;
-        char ops[50] = {0};
+        char ops[55] = {0};
         int ops_size = 0;
 
         while (*p && *p != ')') {
@@ -117,19 +117,33 @@
             if (KeyNum == 3) { 
                 if (allowed_chars[Num] == '=') {
                     double res = result(expr);
-                    OLED_ShowFloatNum(line+1, (Count % 21) + 1, res, 2);
-                                
+                    if(_Float_flag)
+                    {
+                    OLED_ShowFloatNum(line+1,1 , res, 2);
+                    }  
+                    else
+                    {
+                    OLED_ShowSignedNum(line+1,1 , res);
+                    }         
                     
                 } else {
-                
+                    OLED_Clear_Line(line+2);
                     Get_Expression(allowed_chars[Num]);
+                    if(allowed_chars[Num]=='.'||'/')
+                    {
+                        _Float_flag=1;
+                    }
                     Count++;
                     if(Count==16)
                     {
-                        Count =0;
+                        Count =1;
                     
                         line++;
-                    
+                    if(line==3){
+                        
+                        
+                       
+                    }
                     }
                 }
             }

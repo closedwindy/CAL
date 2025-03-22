@@ -201,25 +201,35 @@ void OLED_ShowNum(uint8_t Line, uint8_t Column, uint32_t Number, uint8_t Length)
   * @param  Length 要显示数字的长度，范围：1~10
   * @retval 无
   */
-void OLED_ShowSignedNum(uint8_t Line, uint8_t Column, int32_t Number, uint8_t Length)
-{
-	uint8_t i;
-	uint32_t Number1;
-	if (Number >= 0)
-	{
-		OLED_ShowChar(Line, Column, '+');
-		Number1 = Number;
-	}
-	else
-	{
-		OLED_ShowChar(Line, Column, '-');
-		Number1 = -Number;
-	}
-	for (i = 0; i < Length; i++)							
-	{
-		OLED_ShowChar(Line, Column + i + 1, Number1 / OLED_Pow(10, Length - i - 1) % 10 + '0');
-	}
-}
+ void OLED_ShowSignedNum(uint8_t Line, uint8_t Column, int32_t Number)
+ {
+	 uint8_t i = 0;
+	 uint32_t Number1 = (Number < 0) ? -Number : Number;
+	 uint8_t digits = 0;
+	 uint32_t temp = Number1;
+ 
+
+	 OLED_ShowChar(Line, Column, (Number < 0) ? '-' : '+');
+
+	 do {
+		 digits++;
+		 temp /= 10;
+	 } while (temp > 0);
+
+	 if (Number1 == 0) {
+		 digits = 1;
+	 }
+
+	 temp = Number1;
+	 while (digits > 0) {
+		 uint32_t divisor = OLED_Pow(10, digits - 1);
+		 uint8_t digit = (temp / divisor) % 10;
+		 OLED_ShowChar(Line, Column + i + 1, digit + '0');
+		 temp %= divisor;
+		 digits--;
+		 i++;
+	 }
+ }
 
 /**
   * @brief  OLED显示数字（十六进制，正数）
@@ -351,7 +361,20 @@ void OLED_ShowFloatNum(uint8_t Line, uint8_t Column, double Number, uint8_t Deci
 }
 void OLED_Menu()
 {
-	
 
 
+
+}
+void OLED_Clear_Line(uint8_t line)
+{
+    OLED_SetCursor(line, 0);      
+    for (uint8_t i = 0; i < 128; i++) 
+    {
+        OLED_WriteData(0x00);  
+    }
+	OLED_SetCursor(line-1, 0);      
+    for (uint8_t i = 0; i < 128; i++) 
+    {
+        OLED_WriteData(0x00);  
+    }
 }
