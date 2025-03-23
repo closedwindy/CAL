@@ -1,5 +1,10 @@
 #include "stm32f10x.h"
 #include "OLED_Font.h"
+#include "Key.h"
+#include "CAL_math.h"
+
+
+
 
 /*引脚配置*/
 #define OLED_W_SCL(x)		GPIO_WriteBit(GPIOB, GPIO_Pin_8, (BitAction)(x))
@@ -359,12 +364,7 @@ void OLED_ShowFloatNum(uint8_t Line, uint8_t Column, double Number, uint8_t Deci
         OLED_ShowChar(Line, Column++, (digit % 10) + '0');
     }
 }
-void OLED_Menu()
-{
 
-
-
-}
 void OLED_Clear_Line(uint8_t line)
 {
     OLED_SetCursor(line, 0);      

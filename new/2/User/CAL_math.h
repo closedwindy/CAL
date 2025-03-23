@@ -5,5 +5,7 @@
 double cal(const char** p_ptr);
 void Get_Expression(char ch);
 double result(const char* expr);
-
+void BASIC_CAL();
+void Interal_CAL();
+double trapezoidalIntegration(double a, double b, int n);
 #endif 
