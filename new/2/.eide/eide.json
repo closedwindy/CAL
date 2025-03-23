@@ -216,6 +216,15 @@
           },
           {
             "path": "Hardware/Encoder.h"
+          },
+          {
+            "path": "User/CAL_math.cpp"
+          },
+          {
+            "path": "User/CAL_math.h"
+          },
+          {
+            "path": "User/CAL_math.c"
           }
         ],
         "folders": []
@@ -248,7 +257,9 @@
   },
   "targets": {
     "Target 1": {
-      "excludeList": [],
+      "excludeList": [
+        "<virtual_root>/Hardware/CAL_math.cpp"
+      ],
       "toolchain": "AC5",
       "compileConfig": {
         "cpuType": "Cortex-M3",
