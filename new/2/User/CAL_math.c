@@ -7,6 +7,7 @@
     #include "Key.h"
     #include "math.h"
     #include "string.h"
+  
     char expr[100];
     int i=0;
       int expr_pos;
@@ -122,7 +123,7 @@ void BASIC_CAL()
     
     while (1)
 {
-   
+  
    
     KeyNum = Key_GetNum();      
     Num += Encoder_Get();          
@@ -176,7 +177,7 @@ void Interal_CAL()
     while (1)
     {
        
-    
+        
     KeyNum = Key_GetNum();
     Num += Encoder_Get();
 
@@ -202,7 +203,7 @@ void Interal_CAL()
             }
             else if(KeyNum == 2){ // 切換到下界
                 integral_state = 2;
-                OLED_Clear();
+               
             }
             break;
             
