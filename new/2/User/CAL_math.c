@@ -244,25 +244,25 @@ void Interal_CAL()
         
             OLED_ShowChar(2, (Count % 21), allowed_Interal_num_chars[Num]);
         
-            if (KeyNum == 3) { // 按下输入字符
+            if (KeyNum == 3) {
                 if (ex_pos < 99) {
                     up[ex_pos++] = allowed_Interal_num_chars[Num];
                     up[ex_pos] = '\0';
                     Count++;
                   
                 }
-            } else if (KeyNum == 2) { // 按下切换键确认输入
+            } else if (KeyNum == 2) { 
                 char integral_expr[100];
             
                 if (sscanf(up, "%99s", integral_expr) == 1) {
-                    // 检查是否包含x变量
+                 
                     if (strchr(integral_expr, 'x') != NULL) {
                    
                         strcpy(global_integral_expr, integral_expr);
                         ex_pos = 0;
                         memset(up, 0, sizeof(up));
                         integral_state = 2; // 切换到上限输入
-                        Count = 1;          // 重置光标位置
+                        Count = 7;         
                         OLED_Clear();
                     
                     } 
