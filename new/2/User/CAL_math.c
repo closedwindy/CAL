@@ -7,28 +7,39 @@
     #include "Key.h"
     #include "math.h"
     #include "string.h"
-  
+    #include "stdio.h"
+    #define Pi 3.1415926535
+
+char global_integral_expr[100];
+const int MAX_EXPR_LEN = 99;   
+
+char integral_expr[100];        
+char error_msg[20];            
+double x_value;                 
+int input_step = 0;           
+uint8_t error_flag = 0;        
     char expr[100];
     int i=0;
       int expr_pos;
-   uint8_t line = 1; 
-   uint8_t _Float_flag=0;
-   int16_t Num;                
-  uint8_t KeyNum;             
-  uint8_t Count = 1;  
+uint8_t line = 1; 
+uint8_t _Float_flag=0;
+int16_t Num;
+uint8_t KeyNum;             
+uint8_t Count = 1;  
  int temp=1;
-
- char up[100] = {0};
+ char integral_expr[100];
+char up[100] = {0};
 char down[100] = {0};
+int ex_pos =0;
 int up_pos = 0;
 int down_pos = 0;
 uint8_t integral_state = 1;
  const char allowed_chars[] = {
     '0','1','2','3','4','5','6','7','8','9',
-    '+','-','*','/','(',')','=','.'
+    '+','-','*','/','(',')','=','.','s','c','t','a','L'
 };
 const char allowed_Interal_num_chars[] = {
-    '0','1','2','3','4','5','6','7','8','9','.'
+    '0','1','2','3','4','5','6','7','8','9','+','-','*','/','(',')','x','.','s','c','t','a','L','n'
    
 };
     double cal(const char** p_ptr) {
@@ -46,7 +57,36 @@ const char allowed_Interal_num_chars[] = {
         } else if (*p == '(') {
             p++; // 跳过 '('
             nums[nums_size++] = cal(&p); // 递归处理括号
-        } else if (*p == '+' || *p == '-' || *p == '*' || *p == '/') {
+        }  else if (isalpha((unsigned char)*p)) {  // 处理函数调用
+            char func[10] = {0};
+            int func_len = 0;
+            while (isalpha((unsigned char)*p)) {
+                if (func_len < sizeof(func)-1) {
+                    func[func_len++] = *p;
+                }
+                p++;
+            }
+            if (*p != '(') continue;  // 简单错误跳过
+            p++;  // 跳过'('
+            double arg = cal(&p);     // 递归解析参数
+            if (*p == ')') p++;      // 跳过')'
+            
+          
+            for (int i = 0; func[i]; i++) {
+                func[i] = tolower(func[i]);
+            }
+            double val = 0;
+            if (strcmp(func, "s") == 0) val = sin(arg*Pi/180);
+            else if (strcmp(func, "c") == 0) val = cos(arg*Pi/180);
+            else if (strcmp(func, "t") == 0) val = tan(arg*Pi/180);
+            else if (strcmp(func, "as") == 0) val = asin(arg*Pi/180);
+            else if (strcmp(func, "ac") == 0) val = acos(arg*Pi/180);
+            else if (strcmp(func, "at") == 0) val = atan(arg*Pi/180);
+            else if (strcmp(func, "l") == 0) val = log(arg);
+            nums[nums_size++] = val;
+        }
+       
+        else if (*p == '+' || *p == '-' || *p == '*' || *p == '/') {
             ops[ops_size++] = *p;
             p++;
         } else {
@@ -184,11 +224,53 @@ void Interal_CAL()
     
     if (Num < 0) Num = sizeof(allowed_Interal_num_chars)-1;
     if (Num >= sizeof(allowed_Interal_num_chars)) Num = 0;
-
    
 
+
+    OLED_ShowChar(2, Count % 21, allowed_Interal_num_chars[Num]);
+            
+           
+
     switch(integral_state){
-        case 1: 
+        case 1: {
+            OLED_ShowString(1, 1, "Input Expression:");
+        
+        
+            KeyNum = Key_GetNum();
+            Num += Encoder_Get();
+      
+            if (Num < 0) Num = sizeof(allowed_Interal_num_chars)-1;
+            if (Num >= sizeof(allowed_Interal_num_chars)) Num = 0;
+        
+            OLED_ShowChar(2, (Count % 21), allowed_Interal_num_chars[Num]);
+        
+            if (KeyNum == 3) { // 按下输入字符
+                if (ex_pos < 99) {
+                    up[ex_pos++] = allowed_Interal_num_chars[Num];
+                    up[ex_pos] = '\0';
+                    Count++;
+                  
+                }
+            } else if (KeyNum == 2) { // 按下切换键确认输入
+                char integral_expr[100];
+            
+                if (sscanf(up, "%99s", integral_expr) == 1) {
+                    // 检查是否包含x变量
+                    if (strchr(integral_expr, 'x') != NULL) {
+                   
+                        strcpy(global_integral_expr, integral_expr);
+                        ex_pos = 0;
+                        memset(up, 0, sizeof(up));
+                        integral_state = 2; // 切换到上限输入
+                        Count = 1;          // 重置光标位置
+                        OLED_Clear();
+                    
+                    } 
+                } 
+            }
+            break;
+        }
+        case 2: 
             OLED_ShowString(1, 1, "Upper:");
             
             
@@ -202,17 +284,16 @@ void Interal_CAL()
                 }
             }
             else if(KeyNum == 2){ // 切換到下界
-                integral_state = 2;
+                integral_state = 3;
                
             }
             break;
             
-        case 2: // 输入下限模式
+        case 3: 
             OLED_ShowString(2, 1, "Lower:");
-           if(i=0)
+           if(i==0)
 { Count=7;i=1;}
-           
-            // 显示当前选中字符
+       
             OLED_ShowChar(2, Count % 21, allowed_Interal_num_chars[Num]);
             
             if(KeyNum == 3){ 
@@ -222,7 +303,7 @@ void Interal_CAL()
                     Count++;
                 }
             }
-            else if(KeyNum == 2){ // 开始计算
+            else if(KeyNum == 2){
                 double a = strtod(up, NULL);
                 double b = strtod(down, NULL);
                 double res = trapezoidalIntegration(a, b, 1000);
@@ -234,22 +315,18 @@ void Interal_CAL()
                 down_pos = 0;
                 memset(up, 0, sizeof(up));
                 memset(down, 0, sizeof(down));
-                integral_state = 1;
+                integral_state = 4;
             }
           
             break;
     }
 }
 }
-   
-   
-
-
 double f(double x) {
-    return x*x;
+    char substituted_expr[100];
+    substitute_x(global_integral_expr, x, substituted_expr);
+    return result(substituted_expr);
 }
-
-
 double trapezoidalIntegration(double a, double b, int n) {
     double h = (b - a) / n;
     double sum = 0.5 * (f(a) + f(b));
@@ -263,3 +340,18 @@ double trapezoidalIntegration(double a, double b, int n) {
     return sum * h;
 }
 
+
+void substitute_x(const char* src, double x, char* dst) {
+    char x_str[20];
+    sprintf(x_str, "%.6f", x);
+    int j = 0;
+    for (int i = 0; src[i] && j < 99; i++) {
+        if (src[i] == 'x') {
+            strcpy(&dst[j], x_str);
+            j += strlen(x_str);
+        } else {
+            dst[j++] = src[i];
+        }
+    }
+    dst[j] = 0;
+}

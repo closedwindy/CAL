@@ -8,4 +8,5 @@ double result(const char* expr);
 void BASIC_CAL();
 void Interal_CAL();
 double trapezoidalIntegration(double a, double b, int n);
+void substitute_x(const char* src, double x, char* dst);
 #endif 

@@ -23,6 +23,7 @@ int mode=0;
 
         while(1)
         {
+            
             KeyNum_A = Key_GetNum();     
         OLED_ShowString(1,2,"Select mode:");
         OLED_ShowString(2,1,"Key1:Basical");
